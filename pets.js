@@ -7,10 +7,10 @@ function read(index){
             throw err;
         }
         const parsedData = JSON.parse(data);
-        if (process.argv.length < 4){
+        if (process.argv[3] === undefined){
             console.log(parsedData)
         }else if (index > parsedData.length-1 || index < 0){
-            console.log('Usage: node pets.js read INDEX');
+            console.error('Usage: node pets.js read INDEX');
             process.exit(1);
         }else{
             console.log(parsedData[index]);
@@ -52,7 +52,7 @@ function create(age, kind, name){
 
 const subcommand = process.argv[2];
 if (subcommand === 'read'){
-    read(process.argv[3]);
+    read(Number(process.argv[3]));
 }else if (subcommand === 'create' ){
     create(process.argv[3], process.argv[4], process.argv[5]);
 }else if (subcommand === 'update'){
@@ -63,6 +63,7 @@ if (subcommand === 'read'){
     console.error('Usage: node pets.js [read | create | update | destroy]');
     process.exit(1);
 }
+
 
 
 
