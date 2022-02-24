@@ -16,7 +16,7 @@ const server = http.createServer(function(req, res) {
                 res.statusCode = 500;
                 res.end();
             }
-            if(parsedData[Number(index)]=== undefined){
+            if(parsedData[index] === undefined){
                 res.statusCode = 404;
                 res.setHeader('Content-Type', 'text/plain');
                 res.write('Not Found');
@@ -39,6 +39,11 @@ const server = http.createServer(function(req, res) {
 
             }
         });
+    }else{
+        res.statusCode = 404;
+        res.setHeader('Content-Type', 'text/plain');
+        res.write('Not Found');
+        res.end();
     }
 
     
@@ -46,3 +51,5 @@ const server = http.createServer(function(req, res) {
                 
 
 server.listen(port);
+
+module.exports = server;
