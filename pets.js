@@ -25,28 +25,29 @@ function create(age, kind, name){
     obj.kind = kind;
     obj.name = name;
     
-    fs.readFile('./pets.json', 'utf-8', (err,data)=>{
-        if (err){
-            throw err
-        }
-        const parsedArr = JSON.parse(data);
-        parsedArr.push(obj);
-        const resultArray = JSON.stringify(parsedArr);
-        
-        if ( process.argv.length < 6){
-            console.log('Usage: node pets.js create AGE KIND NAME');
-            process.exit(1);
-        }else{
+    if ( process.argv.length < 6){
+        console.error('Usage: node pets.js create AGE KIND NAME');
+        process.exit(1);
+    }else{
+        fs.readFile('./pets.json', 'utf-8', (err,data)=>{
+            if (err){
+                throw err
+            }
+            const parsedArr = JSON.parse(data);
+            parsedArr.push(obj);
+            const resultArray = JSON.stringify(parsedArr);
+            
             fs.writeFile('./pets.json', resultArray, (err) =>{
                 if (err){
                     throw err
                 }
-                console.log('it worked');
+                console.log(obj);
             });  
         
-        }   
-    })
+        }); 
+    }
 }
+               
 
 
 const subcommand = process.argv[2];
