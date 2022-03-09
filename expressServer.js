@@ -7,7 +7,6 @@ const pool = new Pool({
     database: 'petshop',
 });
 
-app.use(express.text()) //use these for post request
 app.use(express.json())
 
 app.get('/pets', (req, res)=>{
@@ -34,7 +33,12 @@ app.get('/pets/:petId', (req, res)=>{
 
 app.post('/pets', (req, res)=>{
     const { age, name, kind } = req.body;
-    pool.query('INSERT INTO pets (age, name, kind) VALUES ($1, $2, $3) RETURNING *', [age, name, kind] , (err, result)=>{
+
+    if (!age || !name || !kind ){
+        res.sendStatus(400);
+        return;
+    }
+    pool.query('INSERT INTO pets (age, name, kind) VALUES ($1, $2, $3) RETURNING *;', [age, name, kind] , (err, result)=>{
         if (err){
             res.sendStatus(500);
         }
@@ -79,10 +83,7 @@ app.delete('/pets/:petId', (req, res)=>{
         }
     })
 })
-            
-            
-
-
+                   
 
 //  catch all error handling
 app.use((req, res, next) => {
