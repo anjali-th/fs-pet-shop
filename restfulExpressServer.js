@@ -8,6 +8,7 @@ const dataPath = 'pets.json';
 app.use(express.json());
 app.use(express.text());
 
+ 
 
 app.get('/pets', (req, res)=>{
     fs.readFile(dataPath, 'utf-8', (err, data)=>{
@@ -113,10 +114,10 @@ app.delete('/pets/:index', (req, res)=>{
     })
 });
 
-
-
-
-
+app.use((req, res, next) => {
+    res.status(404).set("Content-Type","text/plain").send("Not Found");
+    next();
+})
 
 
 app.listen(8000, () =>{
