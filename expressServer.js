@@ -12,20 +12,21 @@ app.use(express.json())
 //  catch all error handling
 // app.use((req, res, next) => {
 //     res.status(404).send("Not Found");
+//     next();
 // })
 
 
 app.get('/pets', (req, res)=>{
     readPetsFile((err, data)=>{
         res.send(data);
-    })
+    });
 });
 
 app.get('/pets/:index', (req, res)=>{
     const index = req.params.index;  // or const { index } = req.params ;
     readPetsFile((err, data)=>{
         if (data[index] === undefined){
-            res.status(404).set("Content-Type", "text/plain").send('Not Found').end();
+            res.status(404).set("Content-Type", "text/plain").send('Not Found');
         }else{
             res.send(data[index]);
         }
@@ -41,13 +42,14 @@ app.post('/pets', (req, res)=>{
             if (err){
                 throw err
             }
-
-            res.json(req.body).end();
+            res.json(req.body);
         })
-
+              
     })
-
 })
+
+
+
         
  
 

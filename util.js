@@ -12,5 +12,14 @@ function readPetsFile(callback){
     })
 };
 
+// function writePetsFile(callback){
+//     fs.writeFile('pets.json', JSON.stringify(readPetsFile(data)), (err)=>{
+//         if (err){
+//             callback(err);
+//         }else{
+//             callback(null, data);
+//         }
+//     })
+// }
 
 module.exports = { readPetsFile };
