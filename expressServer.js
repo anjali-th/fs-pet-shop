@@ -1,59 +1,98 @@
 
 const express = require('express');
 const app = express();
-const fs = require('fs');
-const { readPetsFile } = require('./util.js');
+const { Pool } = require('pg');
 
-const dataPath = "pets.json";
+const pool = new Pool({
+    database: 'petshop',
+});
 
-// app.use(express.text()) //use these for post request
+app.use(express.text()) //use these for post request
 app.use(express.json())
 
-//  catch all error handling
-// app.use((req, res, next) => {
-//     res.status(404).send("Not Found");
-//     next();
-// })
-
-
 app.get('/pets', (req, res)=>{
-    readPetsFile((err, data)=>{
-        res.send(data);
-    });
-});
-
-app.get('/pets/:index', (req, res)=>{
-    const index = req.params.index;  // or const { index } = req.params ;
-    readPetsFile((err, data)=>{
-        if (data[index] === undefined){
-            res.status(404).set("Content-Type", "text/plain").send('Not Found');
-        }else{
-            res.send(data[index]);
+    pool.query('SELECT * FROM pets', (err, result)=>{
+        if (err){
+            res.sendStatus(500);
         }
-    });
-});
-
-//bonus 
-app.post('/pets', (req, res)=>{
-    readPetsFile((err, data)=>{
-        data.push(req.body);  // added the body to parsed data from pets.json
-        
-        fs.writeFile( dataPath, JSON.stringify(data), (err)=>{
-            if (err){
-                throw err
-            }
-            res.json(req.body);
-        })
-              
+        res.status(200).send(result.rows);
     })
 })
 
+app.get('/pets/:petId', (req, res)=>{
+    const { petId } = req.params;
+    pool.query('SELECT * FROM pets WHERE id = $1 ', [petId], (err, result)=>{
+        if (err){
+            res.sendStatus(500);
+        }else if(!result.rows[0]){
+            res.set('Content-Type', 'text/plain').sendStatus(404);
+        }else{
+            res.status(200).send(result.rows[0]);
+        }
+    });
+})
+
+app.post('/pets', (req, res)=>{
+    const { age, name, kind } = req.body;
+    pool.query('INSERT INTO pets (age, name, kind) VALUES ($1, $2, $3) RETURNING *', [age, name, kind] , (err, result)=>{
+        if (err){
+            res.sendStatus(500);
+        }
+        res.status(201).send(result.rows[0]);
+    });
+});
+
+app.patch('/pets/:petId', (req, res)=>{
+    const { age , name , kind } = req.body;
+    const { petId } = req.params;
+    const query = `UPDATE pets SET
+    age = COALESCE($1, age),
+    name = COALESCE($2, name),
+    kind = COALESCE($3, kind)
+    WHERE id = $4 RETURNING *;`;
+
+    if (!age && !name && !kind){
+        res.sendStatus(400);
+    }else{
+        pool.query( query , [age, name, kind, petId], (err, result)=>{
+            if (err){
+                res.sendStatus(500);
+            }else if (!result.rows[0]){
+                res.set('Content-Type', 'text/plain').sendStatus(404);
+            }else{
+                res.send(result.rows[0]);
+            }
+        })
+    }
+});
+
+app.delete('/pets/:petId', (req, res)=>{
+    const { petId } = req.params;
+
+    pool.query( 'DELETE FROM pets WHERE id = $1 RETURNING * ', [petId], (err, result)=>{
+        if (err){
+            res.sendStatus(500);
+        }else if(!result.rows[0]){
+            res.set('Content-Type', 'text/plain').sendStatus(404);
+        }else{
+            res.send(result.rows[0]);
+        }
+    })
+})
+            
+            
 
 
+
+//  catch all error handling
+app.use((req, res, next) => {
+    res.status(404).set ('Content-Type', 'text/plain').send("Not Found");
+    next();
+})
         
  
 
-app.listen(8080, ()=>{
+app.listen(8000, ()=>{
     console.log('server is running')
 });
 
