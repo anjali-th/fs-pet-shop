@@ -34,7 +34,7 @@ app.get('/pets/:petId', (req, res)=>{
 app.post('/pets', (req, res)=>{
     const { age, name, kind } = req.body;
 
-    if (!age || !name || !kind ){
+    if (!Number(age) || !name || !kind ){
         res.sendStatus(400);
         return;
     }
@@ -57,6 +57,8 @@ app.patch('/pets/:petId', (req, res)=>{
 
     if (!age && !name && !kind){
         res.sendStatus(400);
+    }else if(typeof age !== "number"){
+        res.status(400).send('"age" should be a number');
     }else{
         pool.query( query , [age, name, kind, petId], (err, result)=>{
             if (err){
